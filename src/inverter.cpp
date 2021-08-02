@@ -11,7 +11,7 @@ extern byte inverterType;
 extern byte MPI;
 extern byte PCM;
 extern byte PIP;
-extern byte crc;
+extern bool crcCheck;
 extern int Led_Red;
 extern int Led_Green;
 
@@ -21,6 +21,7 @@ String _otherBuffer ="";
 String _lastRequestedCommand = "-"; //Set to not empty to force a timeout on startup
 PollDelay _lastRequestedAt(_tickCounter);
 String _nextCommandNeeded = "";
+String _rawCommand = "";
 bool _allMessagesUpdated = false;
 bool _otherMessagesUpdated = false;
 PollDelay _lastReceivedAt(_tickCounter);
@@ -423,7 +424,7 @@ void onInverterCommand()
     unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
                                                   _commandBuffer[_commandBuffer.length()-1];
 
-    if (crc) {
+    if (crcCheck) {
       Serial1.print(F(" Calc: "));
       Serial1.print(calculatedCrc, HEX);
       Serial1.print(F(" Rx: "));
@@ -458,7 +459,7 @@ void onInverterCommand()
         }
 
       // Below for PCM & PIP
-      else if (_lastRequestedCommand == "QPIGS" && (crc)) 
+      else if (_lastRequestedCommand == "QPIGS" && (crcCheck)) 
       {
         digitalWrite(Led_Red, LOW); //IF we got a valid command disable red led
         if (onPIGS()) {
@@ -520,7 +521,7 @@ void serviceInverter()
   if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) && (!_allMessagesUpdated))
   {
     if (_nextCommandNeeded == "") {
-      if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
+      if (inverterType == 1)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
       else _nextCommandNeeded = "QPIGS";  //if PIP/PCM
     }
 
@@ -536,8 +537,9 @@ void serviceInverter()
     if (inverterType) { Serial.print("^"); Serial1.print("^");}  //If MPI then prechar is needed
     Serial.print(_nextCommandNeeded);
     Serial1.println(_nextCommandNeeded);
-    if (crc) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
-    if (crc) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (crcCheck) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (crcCheck) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (crcCheck) Serial1.println(F("Doing the CRC"));
     Serial.print("\r");
    
    if (_setCommand.length()) { _nextCommandNeeded = ""; _setCommand = ""; }  // If it was RAW command reset it.

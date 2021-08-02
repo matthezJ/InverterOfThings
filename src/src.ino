@@ -64,6 +64,7 @@ extern P006FPADJMessage _P006FPADJMessage;
 extern String _nextCommandNeeded;
 extern String _setCommand;
 extern String _otherBuffer;
+extern String _rawCommand;
 
 //---------------------- MQTT
 PubSubClient mqttclient(client);
@@ -72,7 +73,7 @@ PubSubClient mqttclient(client);
 const byte MPI = 1;
 const byte PCM = 0;
 const byte PIP = 2;
-byte crc = 0; // Default CRC is off. 
+bool crcCheck = false; // Default CRC is off. 
 byte inverterType = MPI; //And defaults in case...
 String topic = "solar/";  //Default first part of topic. We will add device ID in setup
 String st = "";
@@ -98,14 +99,15 @@ void setup()
   delay(50);
 
   if (String(_settings._deviceType) == "MPI") {
-    inverterType = MPI; }
+    inverterType = MPI; 
+    }
   else if (String(_settings._deviceType) == "PIP"){
     inverterType = PIP;  
-    crc = 1; // Enable CRC
+    crcCheck = true; // Enable CRC
   }
   else {
      inverterType = PCM; 
-     crc = 1;  //Enable CRC
+     crcCheck = true;  //Enable CRC
   }
 
  
@@ -425,9 +427,19 @@ bool sendtoMQTT() {
 void sendRaw() {
   if (_otherMessagesUpdated) {
     _otherMessagesUpdated = false;
-    Serial1.print("Sending other data to mqtt: ");
+    Serial1.print(F("MQTT RAW SEND: Command sent: "));
+    Serial1.print(_rawCommand);
+    Serial1.print(" Raw data recieved: ");
     Serial1.println(_otherBuffer);
     mqttclient.publish((String(topic) + String("/debug/recieved")).c_str(), String(_otherBuffer).c_str() );
+    
+    doc.clear();
+    doc["sentMessage"] = _rawCommand;
+    doc["recievedMessage"] = _otherBuffer;
+    st = "";
+    serializeJson(doc,st);
+    mqttclient.publish((String(topic) + String("/debug/json")).c_str(), st.c_str() );
+    _rawCommand = "";
   }
 }
 /// TESTING MQTT SEND
@@ -442,12 +454,15 @@ void callback(char* top, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     st += String((char)payload[i]);
   }
+  st.trim(); // Remove any whitespaces!!
+
   
-  mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String("top: " + topic + " data: " + st).c_str() );
+  mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String(st).c_str() );
   Serial1.print(F("Current command: "));
   Serial1.print(_nextCommandNeeded);
   Serial1.print(F(" Setting next command to : "));
   Serial1.println(st);
   _setCommand = st;
+  _rawCommand = st;
   // Add code to put the call into the queue but verify it firstly. Then send the result back to debug/new window?
 }

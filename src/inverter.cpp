@@ -230,6 +230,8 @@ bool onP003GS()
   _P003GSMessage.acOutputCurrentR = (float)getNextFloat(_commandBuffer, index)/10;
   _P003GSMessage.acOutputCurrentS = (float)getNextFloat(_commandBuffer, index)/10;
   _P003GSMessage.acOutputCurrentT = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.innerTemp = (float)getNextFloat(_commandBuffer, index);
+  _P003GSMessage.componentTemp = (float)getNextFloat(_commandBuffer, index);
   return true;  
 }
 

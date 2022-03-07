@@ -72,6 +72,8 @@ struct P003GSMessage
   float acOutputCurrentR;
   float acOutputCurrentS;
   float acOutputCurrentT;
+  float innerTemp;
+  float componentTemp;
 };
 
 

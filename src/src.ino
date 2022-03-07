@@ -372,6 +372,9 @@ bool sendtoMQTT() {
     mqttclient.publish((String(topic) + String("/acOutputCurrentS")).c_str(), String(_P003GSMessage.acOutputCurrentS).c_str());
     mqttclient.publish((String(topic) + String("/acOutputCurrentT")).c_str(), String(_P003GSMessage.acOutputCurrentT).c_str());
 
+    mqttclient.publish((String(topic) + String("/innerTemp")).c_str(), String(_P003GSMessage.innerTemp).c_str());
+    mqttclient.publish((String(topic) + String("/componentTemp")).c_str(), String(_P003GSMessage.componentTemp).c_str());
+
     mqttclient.publish((String(topic) + String("/acWattageR")).c_str(), String(_P003PSMessage.w_r).c_str());
     mqttclient.publish((String(topic) + String("/acWattageS")).c_str(), String(_P003PSMessage.w_s).c_str());
     mqttclient.publish((String(topic) + String("/acWattageT")).c_str(), String(_P003PSMessage.w_t).c_str());
@@ -414,6 +417,8 @@ bool sendtoMQTT() {
     doc["calibrationWattR"] = _P006FPADJMessage.calibrationWattR;
     doc["calibrationWattS"] = _P006FPADJMessage.calibrationWattS;
     doc["calibrationWattT"] = _P006FPADJMessage.calibrationWattT;
+    doc["innerTemp"] = _P003GSMessage.innerTemp;
+    doc["componentTemp"] = _P003GSMessage.componentTemp;
     st = "";
     serializeJson(doc,st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );

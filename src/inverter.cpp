@@ -1,9 +1,9 @@
 #include "Arduino.h"
 #include "main.h"
 #include "inverter.h"
-#include "tickCounter.h"
+#include "TickCounter.h"
 
-#include "settings.h"
+#include "Settings.h"
 
 extern TickCounter _tickCounter;
 extern Settings _settings;

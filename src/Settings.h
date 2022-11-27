@@ -1,6 +1,6 @@
 //Settings: Stores persistant settings, loads and saves to EEPROM
 
-#include <arduino.h>
+#include <Arduino.h>
 #include <EEPROM.h>
 
 class Settings
